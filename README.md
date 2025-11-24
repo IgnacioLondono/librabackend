@@ -267,3 +267,7 @@ Sistema de Biblioteca Digital - Arquitectura de Microservicios
 **Nota:** Este es un sistema completo y funcional. Asegúrate de cambiar las contraseñas y secretos JWT en producción.
 
 
+
+
+
+

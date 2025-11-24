@@ -13,3 +13,7 @@ public interface LoanHistoryRepository extends JpaRepository<LoanHistory, Long> 
 }
 
 
+
+
+
+

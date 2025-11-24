@@ -19,3 +19,7 @@ CREATE DATABASE IF NOT EXISTS library_notifications_db CHARACTER SET utf8mb4 COL
 -- Verificar que se crearon correctamente
 SHOW DATABASES LIKE 'library_%';
 
+
+
+
+

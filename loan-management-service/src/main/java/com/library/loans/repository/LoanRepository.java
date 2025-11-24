@@ -25,7 +25,13 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     @Query("SELECT l FROM Loan l WHERE l.userId = :userId AND l.status = 'ACTIVE'")
     List<Loan> findActiveLoansByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT l FROM Loan l WHERE l.dueDate = :dueDate AND l.status = :status")
+    List<Loan> findByDueDateAndStatus(@Param("dueDate") LocalDate dueDate, @Param("status") Loan.Status status);
+
     Optional<Loan> findByIdAndUserId(Long id, Long userId);
 }
+
+
+
 
 

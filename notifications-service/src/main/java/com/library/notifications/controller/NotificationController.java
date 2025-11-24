@@ -2,6 +2,7 @@ package com.library.notifications.controller;
 
 import com.library.notifications.dto.NotificationCreateDTO;
 import com.library.notifications.dto.NotificationResponseDTO;
+import com.library.notifications.dto.UnreadCountResponseDTO;
 import com.library.notifications.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -65,11 +66,18 @@ public class NotificationController {
 
     @GetMapping("/user/{userId}/unread-count")
     @Operation(summary = "Contador de no leídas", description = "Obtiene el número de notificaciones no leídas de un usuario")
-    public ResponseEntity<Long> getUnreadCount(
+    public ResponseEntity<UnreadCountResponseDTO> getUnreadCount(
             @Parameter(description = "ID del usuario") @PathVariable Long userId) {
         Long count = notificationService.getUnreadCount(userId);
-        return ResponseEntity.ok(count);
+        UnreadCountResponseDTO response = UnreadCountResponseDTO.builder()
+                .userId(userId)
+                .unreadCount(count)
+                .build();
+        return ResponseEntity.ok(response);
     }
 }
+
+
+
 
 

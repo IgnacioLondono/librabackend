@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -107,9 +106,9 @@ public class LoanController {
 
     @GetMapping("/{loanId}/fine")
     @Operation(summary = "Calcular multa", description = "Calcula la multa de un préstamo vencido")
-    public ResponseEntity<BigDecimal> calculateFine(
+    public ResponseEntity<FineCalculationDTO> calculateFine(
             @Parameter(description = "ID del préstamo") @PathVariable Long loanId) {
-        BigDecimal fine = loanService.calculateFine(loanId);
+        FineCalculationDTO fine = loanService.calculateFine(loanId);
         return ResponseEntity.ok(fine);
     }
 
@@ -139,5 +138,8 @@ public class LoanController {
         return null;
     }
 }
+
+
+
 
 

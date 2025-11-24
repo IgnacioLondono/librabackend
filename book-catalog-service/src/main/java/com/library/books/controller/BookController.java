@@ -2,6 +2,7 @@ package com.library.books.controller;
 
 import com.library.books.dto.*;
 import com.library.books.service.BookService;
+import com.library.books.service.BookSeedService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class BookController {
 
     private final BookService bookService;
+    private final BookSeedService bookSeedService;
 
     @PostMapping
     @Operation(summary = "Crear libro", description = "Crea un nuevo libro en el catálogo")
@@ -116,6 +120,61 @@ public class BookController {
         Page<BookResponseDTO> books = bookService.getFeaturedBooks(pageable);
         return ResponseEntity.ok(books);
     }
+
+    @GetMapping("/statistics")
+    @Operation(summary = "Estadísticas de libros", description = "Obtiene estadísticas generales del catálogo de libros")
+    public ResponseEntity<BookStatisticsDTO> getBookStatistics() {
+        BookStatisticsDTO statistics = bookService.getBookStatistics();
+        return ResponseEntity.ok(statistics);
+    }
+
+    @GetMapping("/all")
+    @Operation(summary = "Obtener todos los libros", 
+               description = "Obtiene todos los libros sin paginación. Útil para sincronización inicial desde Android.")
+    public ResponseEntity<List<BookResponseDTO>> getAllBooksWithoutPagination() {
+        List<BookResponseDTO> books = bookService.getAllBooksWithoutPagination();
+        return ResponseEntity.ok(books);
+    }
+
+    @PostMapping("/sync")
+    @Operation(summary = "Sincronizar libros", 
+               description = "Sincronización masiva de libros desde Android. Crea nuevos libros o actualiza existentes basándose en ISBN o título+autor.")
+    public ResponseEntity<BookSyncResponseDTO> syncBooks(
+            @Parameter(description = "Lista de libros a sincronizar") @Valid @RequestBody List<BookSyncDTO> books) {
+        BookSyncResponseDTO response = bookService.syncBooks(books);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/bulk")
+    @Operation(summary = "Crear múltiples libros", 
+               description = "Crea múltiples libros en una sola operación. Solo crea nuevos, no actualiza existentes.")
+    public ResponseEntity<List<BookResponseDTO>> createBooksBulk(
+            @Parameter(description = "Lista de libros a crear") @Valid @RequestBody List<BookCreateDTO> books) {
+        List<BookResponseDTO> createdBooks = books.stream()
+                .map(bookService::createBook)
+                .toList();
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdBooks);
+    }
+
+    @DeleteMapping("/bulk")
+    @Operation(summary = "Eliminar múltiples libros", 
+               description = "Elimina múltiples libros por sus IDs. Útil para sincronización desde Android.")
+    public ResponseEntity<Void> deleteBooksBulk(
+            @Parameter(description = "Lista de IDs de libros a eliminar") @RequestBody List<Long> bookIds) {
+        bookService.deleteBooks(bookIds);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/seed")
+    @Operation(summary = "Cargar libros precargados", 
+               description = "Carga 34 libros precargados en la base de datos. Solo inserta los que no existen. Requiere autenticación de administrador.")
+    public ResponseEntity<SeedResponseDTO> loadInitialBooks() {
+        SeedResponseDTO response = bookSeedService.loadInitialBooks();
+        return ResponseEntity.ok(response);
+    }
 }
+
+
+
 
 

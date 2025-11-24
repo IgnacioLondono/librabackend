@@ -17,3 +17,7 @@ Write-Host "5. File > Settings > Build, Execution, Deployment > Build Tools > Ma
 Write-Host "   - Maven home path: (ruta a Maven si esta instalado)" -ForegroundColor White
 Write-Host "6. Click derecho en cada modulo > Maven > Reload Project" -ForegroundColor White
 
+
+
+
+

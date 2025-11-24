@@ -77,3 +77,7 @@ Write-Host "[System.Environment]::SetEnvironmentVariable('JAVA_HOME', '$java21Pa
 Write-Host '$env:PATH = "$env:JAVA_HOME\bin;" + $env:PATH' -ForegroundColor Gray
 Write-Host '[System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, "Machine")' -ForegroundColor Gray
 
+
+
+
+

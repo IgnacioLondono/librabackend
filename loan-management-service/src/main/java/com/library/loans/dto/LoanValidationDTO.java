@@ -17,6 +17,12 @@ public class LoanValidationDTO {
     private String message;
     private Boolean userExists;
     private Boolean bookAvailable;
+    private Boolean withinLoanLimit; // Usuario tiene menos de 5 préstamos activos
+    private Boolean noActiveLoanForBook; // Usuario no tiene préstamo activo del mismo libro
+    private Boolean validLoanDays; // Días de préstamo entre 7 y 30
 }
+
+
+
 
 

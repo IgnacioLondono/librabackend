@@ -36,3 +36,7 @@ Write-Host "4. Click 'Finish' y marca como default" -ForegroundColor White
 Write-Host "5. Click derecho en cada proyecto > Maven > Update Project" -ForegroundColor White
 Write-Host ""
 
+
+
+
+

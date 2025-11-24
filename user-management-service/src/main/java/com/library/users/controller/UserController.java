@@ -1,7 +1,6 @@
 package com.library.users.controller;
 
 import com.library.users.dto.*;
-import com.library.users.model.User;
 import com.library.users.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -65,8 +64,9 @@ public class UserController {
     @PatchMapping("/{userId}/block")
     @Operation(summary = "Bloquear/desbloquear usuario", description = "Cambia el estado de bloqueo de un usuario")
     public ResponseEntity<UserResponseDTO> blockUser(
-            @Parameter(description = "ID del usuario") @PathVariable Long userId) {
-        UserResponseDTO user = userService.blockUser(userId);
+            @Parameter(description = "ID del usuario") @PathVariable Long userId,
+            @Valid @RequestBody BlockUserDTO blockDTO) {
+        UserResponseDTO user = userService.blockUser(userId, blockDTO.getBlocked());
         return ResponseEntity.ok(user);
     }
 
@@ -74,8 +74,8 @@ public class UserController {
     @Operation(summary = "Cambiar rol", description = "Cambia el rol de un usuario")
     public ResponseEntity<UserResponseDTO> changeRole(
             @Parameter(description = "ID del usuario") @PathVariable Long userId,
-            @RequestParam User.Role role) {
-        UserResponseDTO user = userService.changeRole(userId, role);
+            @Valid @RequestBody ChangeRoleDTO roleDTO) {
+        UserResponseDTO user = userService.changeRole(userId, roleDTO.getRole());
         return ResponseEntity.ok(user);
     }
 
@@ -109,5 +109,8 @@ public class UserController {
         return null;
     }
 }
+
+
+
 
 

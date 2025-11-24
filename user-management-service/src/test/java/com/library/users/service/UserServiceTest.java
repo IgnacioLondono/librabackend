@@ -1,5 +1,6 @@
 package com.library.users.service;
 
+import com.library.users.config.JwtConfig;
 import com.library.users.dto.UserLoginDTO;
 import com.library.users.dto.UserRegistrationDTO;
 import com.library.users.dto.UserResponseDTO;
@@ -35,6 +36,9 @@ class UserServiceTest {
 
     @Mock
     private JwtUtil jwtUtil;
+
+    @Mock
+    private JwtConfig jwtConfig;
 
     @InjectMocks
     private UserService userService;
@@ -91,11 +95,14 @@ class UserServiceTest {
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(jwtUtil.generateToken(anyLong(), anyString(), anyString())).thenReturn("testToken");
+        when(jwtConfig.getExpiration()).thenReturn(86400L);
 
         var result = userService.login(loginDTO);
 
         assertNotNull(result);
         assertEquals("testToken", result.getToken());
+        assertNotNull(result.getUser());
+        assertEquals(86400L, result.getExpiresIn());
         verify(sessionRepository, times(1)).save(any());
     }
 
@@ -111,5 +118,8 @@ class UserServiceTest {
         assertThrows(RuntimeException.class, () -> userService.login(loginDTO));
     }
 }
+
+
+
 
 

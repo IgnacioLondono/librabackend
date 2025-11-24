@@ -1,6 +1,7 @@
 package com.library.loans.service;
 
 import com.library.loans.client.BookServiceClient;
+import com.library.loans.client.NotificationServiceClient;
 import com.library.loans.client.UserServiceClient;
 import com.library.loans.config.LoanConfig;
 import com.library.loans.dto.*;
@@ -27,6 +28,7 @@ public class LoanService {
     private final LoanHistoryRepository loanHistoryRepository;
     private final UserServiceClient userServiceClient;
     private final BookServiceClient bookServiceClient;
+    private final NotificationServiceClient notificationServiceClient;
     private final LoanConfig loanConfig;
 
     @Transactional
@@ -48,10 +50,21 @@ public class LoanService {
         // Verificar préstamos activos del usuario
         List<Loan> activeLoans = loanRepository.findActiveLoansByUserId(createDTO.getUserId());
         if (activeLoans.size() >= 5) { // Límite de 5 préstamos activos
-            throw new RuntimeException("El usuario ha alcanzado el límite de préstamos activos");
+            throw new RuntimeException("El usuario ya tiene 5 préstamos activos. No se pueden crear más préstamos.");
         }
 
+        // Verificar que el usuario no tenga un préstamo activo del mismo libro
+        boolean hasActiveLoanForBook = activeLoans.stream()
+                .anyMatch(loan -> loan.getBookId().equals(createDTO.getBookId()));
+        if (hasActiveLoanForBook) {
+            throw new RuntimeException("El usuario ya tiene un préstamo activo de este libro");
+        }
+
+        // Validar días de préstamo (mínimo 7, máximo 30)
         int loanDays = createDTO.getLoanDays() != null ? createDTO.getLoanDays() : loanConfig.getDefaultDays();
+        if (loanDays < 7 || loanDays > 30) {
+            throw new RuntimeException("Los días de préstamo deben estar entre 7 y 30 días");
+        }
         LocalDate loanDate = LocalDate.now();
         LocalDate dueDate = loanDate.plusDays(loanDays);
 
@@ -78,6 +91,15 @@ public class LoanService {
                 .notes("Préstamo creado")
                 .build();
         loanHistoryRepository.save(history);
+
+        // Crear notificación de préstamo creado
+        notificationServiceClient.createNotification(
+                createDTO.getUserId(),
+                "LOAN_CREATED",
+                "Préstamo creado",
+                "Has solicitado el préstamo del libro. Fecha de devolución: " + dueDate,
+                "MEDIUM"
+        ).subscribe();
 
         log.info("Préstamo creado exitosamente con ID: {}", loan.getId());
 
@@ -132,17 +154,33 @@ public class LoanService {
         bookServiceClient.updateBookCopies(loan.getBookId(), 1).block();
 
         // Calcular multa si está vencido
+        BigDecimal fineAmount = BigDecimal.ZERO;
         if (loan.isOverdue()) {
-            calculateFine(loan);
+            fineAmount = calculateFine(loan);
         }
 
         // Registrar en historial
         LoanHistory history = LoanHistory.builder()
                 .loanId(loan.getId())
                 .action(LoanHistory.Action.RETURNED)
-                .notes("Libro devuelto")
+                .notes("Libro devuelto" + (fineAmount.compareTo(BigDecimal.ZERO) > 0 ? ". Multa: $" + fineAmount : ""))
                 .build();
         loanHistoryRepository.save(history);
+
+        // Crear notificación de devolución
+        String message = "Has devuelto el libro correctamente.";
+        if (fineAmount.compareTo(BigDecimal.ZERO) > 0) {
+            message += " Multa aplicada: $" + fineAmount;
+        }
+        notificationServiceClient.createNotification(
+                loan.getUserId(),
+                "LOAN_RETURNED",
+                "Libro devuelto",
+                message,
+                fineAmount.compareTo(BigDecimal.ZERO) > 0 ? "HIGH" : "MEDIUM"
+        ).subscribe();
+
+        log.info("Préstamo {} devuelto exitosamente. Multa: {}", loanId, fineAmount);
 
         return LoanResponseDTO.fromEntity(loan);
     }
@@ -158,11 +196,17 @@ public class LoanService {
             throw new RuntimeException("Solo se pueden extender préstamos activos");
         }
 
-        if (loan.getExtensionsCount() >= loanConfig.getMaxExtensions()) {
-            throw new RuntimeException("Se ha alcanzado el límite de extensiones permitidas");
+        if (loan.isOverdue()) {
+            throw new RuntimeException("No se puede extender un préstamo vencido. Por favor, devuelve el libro.");
         }
 
-        loan.setDueDate(loan.getDueDate().plusDays(loanConfig.getDefaultDays()));
+        if (loan.getExtensionsCount() >= loanConfig.getMaxExtensions()) {
+            throw new RuntimeException("El préstamo ya ha sido extendido 2 veces. No se pueden hacer más extensiones.");
+        }
+
+        // Extender 7 días adicionales
+        int extensionDays = 7;
+        loan.setDueDate(loan.getDueDate().plusDays(extensionDays));
         loan.setExtensionsCount(loan.getExtensionsCount() + 1);
         loan = loanRepository.save(loan);
 
@@ -170,9 +214,20 @@ public class LoanService {
         LoanHistory history = LoanHistory.builder()
                 .loanId(loan.getId())
                 .action(LoanHistory.Action.EXTENDED)
-                .notes("Préstamo extendido")
+                .notes("Préstamo extendido por " + extensionDays + " días")
                 .build();
         loanHistoryRepository.save(history);
+
+        // Crear notificación de extensión
+        notificationServiceClient.createNotification(
+                loan.getUserId(),
+                "LOAN_EXTENDED",
+                "Préstamo extendido",
+                "Tu préstamo ha sido extendido " + extensionDays + " días. Nueva fecha de devolución: " + loan.getDueDate(),
+                "LOW"
+        ).subscribe();
+        
+        log.info("Préstamo {} extendido exitosamente. Nueva fecha de vencimiento: {}", loanId, loan.getDueDate());
 
         return LoanResponseDTO.fromEntity(loan);
     }
@@ -202,6 +257,17 @@ public class LoanService {
                 .build();
         loanHistoryRepository.save(history);
 
+        // Crear notificación de cancelación
+        notificationServiceClient.createNotification(
+                loan.getUserId(),
+                "LOAN_CANCELLED",
+                "Préstamo cancelado",
+                "Tu préstamo ha sido cancelado exitosamente.",
+                "MEDIUM"
+        ).subscribe();
+
+        log.info("Préstamo {} cancelado exitosamente", loanId);
+
         return LoanResponseDTO.fromEntity(loan);
     }
 
@@ -216,10 +282,31 @@ public class LoanService {
                 .collect(Collectors.toList());
     }
 
-    public BigDecimal calculateFine(Long loanId) {
+    public FineCalculationDTO calculateFine(Long loanId) {
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new RuntimeException("Préstamo no encontrado"));
-        return calculateFine(loan);
+        
+        BigDecimal fine = calculateFine(loan);
+        
+        if (!loan.isOverdue()) {
+            return FineCalculationDTO.builder()
+                    .loanId(loanId)
+                    .daysOverdue(0)
+                    .dailyFineRate(BigDecimal.valueOf(loanConfig.getFinePerDay()))
+                    .totalFine(BigDecimal.ZERO)
+                    .message("El préstamo no está vencido")
+                    .build();
+        }
+        
+        long daysOverdue = LocalDate.now().toEpochDay() - loan.getDueDate().toEpochDay();
+        
+        return FineCalculationDTO.builder()
+                .loanId(loanId)
+                .daysOverdue((int) daysOverdue)
+                .dailyFineRate(BigDecimal.valueOf(loanConfig.getFinePerDay()))
+                .totalFine(fine)
+                .message("Préstamo vencido hace " + daysOverdue + " días")
+                .build();
     }
 
     private BigDecimal calculateFine(Loan loan) {
@@ -247,19 +334,48 @@ public class LoanService {
                 .bookId(createDTO.getBookId())
                 .build();
 
+        // Validar usuario
         Boolean userValid = userServiceClient.validateUser(createDTO.getUserId(), token).block();
         validation.setUserExists(userValid != null && userValid);
 
+        // Validar disponibilidad del libro
         Boolean bookAvailable = bookServiceClient.checkBookAvailability(createDTO.getBookId()).block();
         validation.setBookAvailable(bookAvailable != null && bookAvailable);
 
-        validation.setValid(validation.getUserExists() && validation.getBookAvailable());
+        // Validar límite de préstamos activos
+        List<Loan> activeLoans = loanRepository.findActiveLoansByUserId(createDTO.getUserId());
+        boolean withinLoanLimit = activeLoans.size() < 5;
+        validation.setWithinLoanLimit(withinLoanLimit);
 
+        // Validar que no tenga préstamo activo del mismo libro
+        boolean hasActiveLoanForBook = activeLoans.stream()
+                .anyMatch(loan -> loan.getBookId().equals(createDTO.getBookId()));
+        validation.setNoActiveLoanForBook(!hasActiveLoanForBook);
+
+        // Validar días de préstamo
+        int loanDays = createDTO.getLoanDays() != null ? createDTO.getLoanDays() : loanConfig.getDefaultDays();
+        boolean validLoanDays = loanDays >= 7 && loanDays <= 30;
+        validation.setValidLoanDays(validLoanDays);
+
+        // Validación general
+        validation.setValid(validation.getUserExists() 
+                && validation.getBookAvailable() 
+                && validation.getWithinLoanLimit()
+                && validation.getNoActiveLoanForBook()
+                && validation.getValidLoanDays());
+
+        // Mensaje de error específico
         if (!validation.getValid()) {
             if (!validation.getUserExists()) {
                 validation.setMessage("Usuario no válido o no encontrado");
             } else if (!validation.getBookAvailable()) {
-                validation.setMessage("El libro no está disponible");
+                validation.setMessage("El libro no tiene copias disponibles");
+            } else if (!validation.getWithinLoanLimit()) {
+                validation.setMessage("El usuario ya tiene 5 préstamos activos. No se pueden crear más préstamos.");
+            } else if (!validation.getNoActiveLoanForBook()) {
+                validation.setMessage("El usuario ya tiene un préstamo activo de este libro");
+            } else if (!validation.getValidLoanDays()) {
+                validation.setMessage("Los días de préstamo deben estar entre 7 y 30 días");
             }
         } else {
             validation.setMessage("Validación exitosa");
@@ -268,5 +384,8 @@ public class LoanService {
         return validation;
     }
 }
+
+
+
 
 

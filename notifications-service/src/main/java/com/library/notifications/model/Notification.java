@@ -50,12 +50,22 @@ public class Notification {
     private LocalDateTime createdAt;
 
     public enum Type {
-        LOAN_CREATED, LOAN_DUE, LOAN_OVERDUE, BOOK_AVAILABLE, SYSTEM
+        LOAN_CREATED, 
+        LOAN_DUE, 
+        LOAN_OVERDUE, 
+        LOAN_RETURNED,
+        LOAN_EXTENDED,
+        LOAN_CANCELLED,
+        BOOK_AVAILABLE, 
+        SYSTEM
     }
 
     public enum Priority {
         LOW, MEDIUM, HIGH
     }
 }
+
+
+
 
 

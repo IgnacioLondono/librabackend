@@ -32,3 +32,7 @@ Write-Host "1. Abre VS Code en esta carpeta" -ForegroundColor White
 Write-Host "2. Ctrl+Shift+P > Java: Clean Java Language Server Workspace" -ForegroundColor White
 Write-Host "3. Reinicia VS Code" -ForegroundColor White
 
+
+
+
+

@@ -120,21 +120,20 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDTO blockUser(Long userId) {
-        log.info("Cambiando estado de bloqueo para usuario: {}", userId);
+    public UserResponseDTO blockUser(Long userId, Boolean blocked) {
+        log.info("Cambiando estado de bloqueo para usuario {} a {}", userId, blocked);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        user.setStatus(user.getStatus() == User.Status.ACTIVO
-                ? User.Status.BLOQUEADO
-                : User.Status.ACTIVO);
+        user.setStatus(blocked ? User.Status.BLOQUEADO : User.Status.ACTIVO);
 
         user = userRepository.save(user);
 
-        // Invalidar todas las sesiones del usuario
+        // Invalidar todas las sesiones del usuario si se bloquea
         if (user.getStatus() == User.Status.BLOQUEADO) {
             sessionRepository.deleteByUserId(userId);
+            log.info("Sesiones invalidadas para usuario bloqueado: {}", userId);
         }
 
         return UserResponseDTO.fromEntity(user);

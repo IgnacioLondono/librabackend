@@ -1,23 +1,153 @@
-// Agrega estas dependencias a tu build.gradle (Module: app)
-
-dependencies {
-    // Retrofit para llamadas HTTP
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    
-    // OkHttp para logging y interceptors
-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
-    
-    // Gson para serialización JSON
-    implementation 'com.google.code.gson:gson:2.10.1'
-    
-    // Coroutines para operaciones asíncronas
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
-    
-    // ViewModel y LiveData
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
 }
 
+android {
+    namespace 'com.example.uinavegacion'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.example.uinavegacion"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        // URLs de los microservicios
+        buildConfigField "String", "BASE_URL_USER", "\"http://10.0.2.2:8081\""
+        buildConfigField "String", "BASE_URL_BOOK", "\"http://10.0.2.2:8082\""
+        buildConfigField "String", "BASE_URL_LOAN", "\"http://10.0.2.2:8083\""
+        buildConfigField "String", "BASE_URL_REPORTS", "\"http://10.0.2.2:8084\""
+        buildConfigField "String", "BASE_URL_NOTIFICATIONS", "\"http://10.0.2.2:8085\""
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            minifyEnabled false
+        }
+    }
+
+    signingConfigs {
+        release {
+            storeFile file('../keystore/library-release.jks')
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: "library123"
+            keyAlias "library-key"
+            keyPassword System.getenv("KEY_PASSWORD") ?: "library123"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    buildFeatures {
+        buildConfig true
+        viewBinding true
+    }
+}
+
+dependencies {
+    // Core Android
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    // Lifecycle
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+
+    // Navigation
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.6'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.7.6'
+
+    // Retrofit para APIs
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
+
+    // Gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    // Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+
+    // Hilt para inyección de dependencias
+    implementation 'com.google.dagger:hilt-android:2.48'
+    kapt 'com.google.dagger:hilt-android-compiler:2.48'
+
+    // Room (si se usa base de datos local)
+    implementation 'androidx.room:room-runtime:2.6.1'
+    implementation 'androidx.room:room-ktx:2.6.1'
+    kapt 'androidx.room:room-compiler:2.6.1'
+
+    // Glide para imágenes
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:5.7.0'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
+    testImplementation 'androidx.arch.core:core-testing:2.2.0'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
+    testImplementation 'androidx.lifecycle:lifecycle-viewmodel-testing:2.7.0'
+    
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'com.google.dagger:hilt-android-testing:2.48'
+    kaptAndroidTest 'com.google.dagger:hilt-android-compiler:2.48'
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.register('jacocoTestReport', JacocoReport) {
+    dependsOn 'test'
+    
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    
+    executionData.setFrom(fileTree(layout.buildDirectory.dir("jacoco")).include("**/*.exec"))
+    
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/R.class",
+                    "**/R\$*.class",
+                    "**/BuildConfig.*",
+                    "**/Manifest*.*",
+                    "**/*_Hilt*.*",
+                    "**/Hilt*.*"
+                )
+            }
+        })
+    )
+}
+
+tasks.named('test') {
+    finalizedBy 'jacocoTestReport'
+}

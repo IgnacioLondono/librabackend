@@ -67,4 +67,9 @@ logging:
   file:
     name: logs/book-catalog-service.log
 
+# Carga inicial de datos
+# Cambiar a 'true' para cargar automáticamente los 34 libros al iniciar (solo si BD está vacía)
+books:
+  load-initial-data: false
+
 
