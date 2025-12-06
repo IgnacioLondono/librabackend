@@ -28,7 +28,7 @@ public class BookDataInitializer implements CommandLineRunner {
         
         if (bookCount == 0) {
             log.info("Base de datos vacía. Cargando libros precargados...");
-            var result = bookSeedService.loadInitialBooks();
+            var result = bookSeedService.loadInitialBooks(false);
             log.info("Carga inicial completada: {}", result.getMessage());
         } else {
             log.info("Base de datos ya contiene {} libros. No se cargarán datos iniciales.", bookCount);

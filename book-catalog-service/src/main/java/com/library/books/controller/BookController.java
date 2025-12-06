@@ -28,8 +28,29 @@ public class BookController {
     private final BookSeedService bookSeedService;
 
     @PostMapping
-    @Operation(summary = "Crear libro", description = "Crea un nuevo libro en el catálogo")
-    public ResponseEntity<BookResponseDTO> createBook(@Valid @RequestBody BookCreateDTO createDTO) {
+    @Operation(
+        summary = "Crear libro", 
+        description = "Crea un nuevo libro en el catálogo. Requiere título y autor como campos obligatorios. " +
+                     "El ISBN debe ser único si se proporciona. El número de copias totales debe ser al menos 1. " +
+                     "Las copias disponibles se inicializan igual al total de copias.",
+        responses = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "201", 
+                description = "Libro creado exitosamente",
+                content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = BookResponseDTO.class)
+                )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "400", 
+                description = "Datos inválidos o ISBN duplicado"
+            )
+        }
+    )
+    public ResponseEntity<BookResponseDTO> createBook(
+            @Parameter(description = "Datos del libro a crear. Título y autor son obligatorios.", required = true)
+            @Valid @RequestBody BookCreateDTO createDTO) {
         BookResponseDTO book = bookService.createBook(createDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(book);
     }
@@ -43,12 +64,23 @@ public class BookController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar libros", description = "Obtiene una lista paginada de libros con filtros opcionales")
+    @Operation(
+        summary = "Listar libros", 
+        description = "Obtiene una lista paginada de todos los libros en el catálogo. " +
+                     "Soporta paginación y ordenamiento por cualquier campo. " +
+                     "Solo retorna libros que existen en la base de datos (id > 0).",
+        responses = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200", 
+                description = "Lista de libros obtenida exitosamente"
+            )
+        }
+    )
     public ResponseEntity<Page<BookResponseDTO>> getAllBooks(
-            @Parameter(description = "Número de página") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "Campo de ordenamiento") @RequestParam(defaultValue = "title") String sortBy,
-            @Parameter(description = "Dirección de ordenamiento") @RequestParam(defaultValue = "ASC") String sortDir) {
+            @Parameter(description = "Número de página (inicia en 0)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Cantidad de elementos por página", example = "10", schema = @io.swagger.v3.oas.annotations.media.Schema(minimum = "1", maximum = "100")) @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo por el cual ordenar (title, author, year, etc.)", example = "title") @RequestParam(defaultValue = "title") String sortBy,
+            @Parameter(description = "Dirección de ordenamiento", example = "ASC", schema = @io.swagger.v3.oas.annotations.media.Schema(allowableValues = {"ASC", "DESC"})) @RequestParam(defaultValue = "ASC") String sortDir) {
         Sort sort = sortDir.equalsIgnoreCase("DESC") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<BookResponseDTO> books = bookService.getAllBooks(pageable);
@@ -56,11 +88,22 @@ public class BookController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "Buscar libros", description = "Busca libros por título, autor o ISBN")
+    @Operation(
+        summary = "Buscar libros", 
+        description = "Busca libros en el catálogo por título, autor o ISBN. " +
+                     "La búsqueda es case-insensitive y busca coincidencias parciales. " +
+                     "Solo retorna libros que existen en la base de datos.",
+        responses = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200", 
+                description = "Resultados de la búsqueda"
+            )
+        }
+    )
     public ResponseEntity<Page<BookResponseDTO>> searchBooks(
-            @Parameter(description = "Término de búsqueda") @RequestParam String q,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @Parameter(description = "Término de búsqueda (se busca en título, autor e ISBN)", example = "Orwell", required = true) @RequestParam String q,
+            @Parameter(description = "Número de página (inicia en 0)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Cantidad de elementos por página", example = "10") @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<BookResponseDTO> books = bookService.searchBooks(q, pageable);
         return ResponseEntity.ok(books);
@@ -168,8 +211,10 @@ public class BookController {
     @PostMapping("/seed")
     @Operation(summary = "Cargar libros precargados", 
                description = "Carga 34 libros precargados en la base de datos. Solo inserta los que no existen. Requiere autenticación de administrador.")
-    public ResponseEntity<SeedResponseDTO> loadInitialBooks() {
-        SeedResponseDTO response = bookSeedService.loadInitialBooks();
+    public ResponseEntity<SeedResponseDTO> loadInitialBooks(
+            @Parameter(description = "Forzar recarga eliminando libros existentes") 
+            @RequestParam(defaultValue = "false") boolean forceReload) {
+        SeedResponseDTO response = bookSeedService.loadInitialBooks(forceReload);
         return ResponseEntity.ok(response);
     }
 }

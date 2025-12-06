@@ -49,6 +49,10 @@ public class Book {
     @Column(name = "cover_url", length = 500)
     private String coverUrl;
 
+    @Lob
+    @Column(name = "cover_image", columnDefinition = "LONGBLOB")
+    private byte[] coverImage;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

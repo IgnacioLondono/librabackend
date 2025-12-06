@@ -25,10 +25,18 @@ public class BookSeedService {
 
     /**
      * Cargar los 34 libros precargados en la base de datos
+     * @param forceReload Si es true, elimina los libros existentes antes de cargar
      */
     @Transactional
-    public SeedResponseDTO loadInitialBooks() {
-        log.info("Iniciando carga de libros precargados...");
+    public SeedResponseDTO loadInitialBooks(boolean forceReload) {
+        log.info("Iniciando carga de libros precargados... (forceReload: {})", forceReload);
+
+        // Si se fuerza la recarga, eliminar todos los libros existentes
+        if (forceReload) {
+            long countBefore = bookRepository.count();
+            bookRepository.deleteAll();
+            log.info("Eliminados {} libros existentes para recarga forzada", countBefore);
+        }
 
         List<BookCreateDTO> initialBooks = getInitialBooks();
         int totalProcessed = initialBooks.size();

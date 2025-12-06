@@ -1,5 +1,7 @@
 package com.library.users.security;
 
+import com.library.users.model.User;
+import com.library.users.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.security.SecurityException;
@@ -25,6 +27,7 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -45,15 +48,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String email = jwtUtil.extractEmail(jwt);
                 String role = jwtUtil.extractRole(jwt);
 
-                // Solo establecer autenticación si no existe una ya establecida
-                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            email,
-                            null,
-                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-                    );
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                // Validar que el usuario existe en la base de datos
+                if (email != null) {
+                    User user = userRepository.findByEmail(email).orElse(null);
+                    if (user == null) {
+                        log.warn("Token válido pero usuario no encontrado en BD: {}", email);
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
+                    
+                    // Verificar que el usuario no esté bloqueado
+                    if (user.getStatus() == User.Status.BLOQUEADO) {
+                        log.warn("Intento de acceso con usuario bloqueado: {}", email);
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
+
+                    // Solo establecer autenticación si no existe una ya establecida
+                    if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                email,
+                                null,
+                                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
+                        );
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
             }
         } catch (ExpiredJwtException e) {

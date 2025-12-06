@@ -49,6 +49,10 @@ public class User {
     @Column(name = "profile_image_uri", length = 500)
     private String profileImageUri;
 
+    @Lob
+    @Column(name = "profile_image", columnDefinition = "LONGBLOB")
+    private byte[] profileImage;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
