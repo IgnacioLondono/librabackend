@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,6 +98,83 @@ public class BookSeedService {
                 inserted, alreadyExists, errors);
 
         log.info("Carga de libros completada: {}", message);
+
+        return SeedResponseDTO.builder()
+                .totalProcessed(totalProcessed)
+                .inserted(inserted)
+                .alreadyExists(alreadyExists)
+                .errors(errors)
+                .message(message)
+                .build();
+    }
+
+    /**
+     * Cargar libros desde una lista externa (JSON)
+     * @param books Lista de libros a cargar
+     */
+    @Transactional
+    public SeedResponseDTO loadBooksBulk(List<BookCreateDTO> books) {
+        log.info("Iniciando carga masiva de {} libros desde JSON externo", books.size());
+
+        int totalProcessed = books.size();
+        int inserted = 0;
+        int alreadyExists = 0;
+        int errors = 0;
+
+        for (BookCreateDTO bookDTO : books) {
+            try {
+                // Verificar si existe por ISBN
+                boolean exists = false;
+                if (bookDTO.getIsbn() != null && !bookDTO.getIsbn().trim().isEmpty()) {
+                    exists = bookRepository.findByIsbn(bookDTO.getIsbn().trim()).isPresent();
+                }
+
+                // Si no existe por ISBN, verificar por título + autor
+                if (!exists) {
+                    exists = bookRepository.findAll().stream()
+                            .anyMatch(b -> b.getTitle().equalsIgnoreCase(bookDTO.getTitle().trim()) &&
+                                    b.getAuthor().equalsIgnoreCase(bookDTO.getAuthor().trim()));
+                }
+
+                if (exists) {
+                    alreadyExists++;
+                    log.debug("Libro ya existe: {} - {}", bookDTO.getTitle(), bookDTO.getAuthor());
+                } else {
+                    // Crear el libro
+                    int totalCopies = bookDTO.getTotalCopies() != null ? bookDTO.getTotalCopies() : 1;
+                    int availableCopies = totalCopies; // Por defecto, todas las copias están disponibles
+                    
+                    Book book = Book.builder()
+                            .title(bookDTO.getTitle().trim())
+                            .author(bookDTO.getAuthor().trim())
+                            .isbn(bookDTO.getIsbn() != null ? bookDTO.getIsbn().trim() : null)
+                            .category(bookDTO.getCategory() != null ? bookDTO.getCategory().trim() : null)
+                            .publisher(bookDTO.getPublisher() != null ? bookDTO.getPublisher().trim() : null)
+                            .year(bookDTO.getYear())
+                            .description(bookDTO.getDescription() != null ? bookDTO.getDescription().trim() : null)
+                            .coverUrl(bookDTO.getCoverUrl() != null && !bookDTO.getCoverUrl().trim().isEmpty() 
+                                    ? bookDTO.getCoverUrl().trim() : null)
+                            .totalCopies(totalCopies)
+                            .availableCopies(availableCopies)
+                            .price(bookDTO.getPrice())
+                            .featured(bookDTO.getFeatured() != null ? bookDTO.getFeatured() : false)
+                            .build();
+
+                    bookRepository.save(book);
+                    inserted++;
+                    log.debug("Libro insertado: {} - {} (Total: {}, Disponibles: {})", 
+                            book.getTitle(), book.getAuthor(), totalCopies, availableCopies);
+                }
+            } catch (Exception e) {
+                errors++;
+                log.error("Error insertando libro {} - {}: {}", bookDTO.getTitle(), bookDTO.getAuthor(), e.getMessage());
+            }
+        }
+
+        String message = String.format("Se insertaron %d libros nuevos. %d ya existían. %d errores.",
+                inserted, alreadyExists, errors);
+
+        log.info("Carga masiva de libros completada: {}", message);
 
         return SeedResponseDTO.builder()
                 .totalProcessed(totalProcessed)

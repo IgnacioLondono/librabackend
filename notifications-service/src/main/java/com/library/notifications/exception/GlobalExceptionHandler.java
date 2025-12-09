@@ -20,14 +20,23 @@ public class GlobalExceptionHandler {
             RuntimeException ex, WebRequest request) {
         log.error("RuntimeException: {}", ex.getMessage(), ex);
 
+        // Detectar si es un error 404 (recurso no encontrado)
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        String errorType = "Bad Request";
+        
+        if (ex.getMessage() != null && ex.getMessage().contains("no encontrado")) {
+            status = HttpStatus.NOT_FOUND;
+            errorType = "Not Found";
+        }
+
         Map<String, Object> error = new HashMap<>();
         error.put("timestamp", LocalDateTime.now());
-        error.put("status", HttpStatus.BAD_REQUEST.value());
-        error.put("error", "Bad Request");
+        error.put("status", status.value());
+        error.put("error", errorType);
         error.put("message", ex.getMessage());
         error.put("path", request.getDescription(false).replace("uri=", ""));
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        return ResponseEntity.status(status).body(error);
     }
 
     @ExceptionHandler(Exception.class)

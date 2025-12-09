@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/register", "/api/users/login", "/api/users/validate-token").permitAll()
+                        .requestMatchers("/api/users/bulk").permitAll() // Permitir carga masiva desde Android
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/actuator/**").permitAll()
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMINISTRADOR")
                         .anyRequest().authenticated()

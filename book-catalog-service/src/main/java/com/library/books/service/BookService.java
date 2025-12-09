@@ -164,7 +164,20 @@ public class BookService {
         log.info("Eliminando libro: {}", bookId);
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
+        
+        // Validar que no tenga copias prestadas (indicador de préstamos activos)
+        // NOTA: Para una validación completa, se debería consultar el servicio de préstamos
+        // para verificar préstamos activos. Por ahora, validamos que todas las copias estén disponibles.
+        if (book.getAvailableCopies() < book.getTotalCopies()) {
+            throw new RuntimeException(
+                String.format("No se puede eliminar el libro porque tiene %d copias prestadas. " +
+                             "Debe devolver todos los préstamos activos antes de eliminar el libro.",
+                             book.getTotalCopies() - book.getAvailableCopies())
+            );
+        }
+        
         bookRepository.delete(book);
+        log.info("Libro {} eliminado exitosamente", bookId);
     }
 
     public BookAvailabilityDTO checkAvailability(Long bookId) {

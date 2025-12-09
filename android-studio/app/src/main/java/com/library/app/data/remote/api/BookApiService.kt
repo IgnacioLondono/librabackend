@@ -68,7 +68,7 @@ interface BookApiService {
     suspend fun syncBooks(@Body books: List<BookSyncDTO>): Response<BookSyncResponseDTO>
 
     @POST("api/books/bulk")
-    suspend fun createBooksBulk(@Body books: List<BookCreateDTO>): Response<List<BookResponseDTO>>
+    suspend fun loadBooksBulk(@Body books: List<BookCreateDTO>): Response<SeedResponse>
 
     @DELETE("api/books/bulk")
     suspend fun deleteBooksBulk(@Body bookIds: List<Long>): Response<Unit>

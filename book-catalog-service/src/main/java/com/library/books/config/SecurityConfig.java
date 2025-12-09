@@ -26,6 +26,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/actuator/**").permitAll()
                         .requestMatchers("/api/books/seed").hasAuthority("ROLE_ADMINISTRADOR")
+                        .requestMatchers("/api/books/bulk").permitAll() // Permitir carga masiva desde Android
                         .requestMatchers("/api/books/**").permitAll() // Permitir acceso público a libros
                         .anyRequest().authenticated()
                 )

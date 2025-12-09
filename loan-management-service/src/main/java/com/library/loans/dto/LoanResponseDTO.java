@@ -18,37 +18,37 @@ import java.time.LocalDateTime;
 @Schema(description = "DTO de respuesta con la información completa de un préstamo")
 public class LoanResponseDTO {
 
-    @Schema(description = "ID único del préstamo generado automáticamente", example = "1", required = true)
+    @Schema(description = "ID único del préstamo generado automáticamente", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long id;
 
-    @Schema(description = "ID del usuario que tiene el préstamo", example = "5", required = true)
+    @Schema(description = "ID del usuario que tiene el préstamo", example = "5", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long userId;
 
-    @Schema(description = "ID del libro prestado", example = "10", required = true)
+    @Schema(description = "ID del libro prestado", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long bookId;
 
-    @Schema(description = "Fecha en que se realizó el préstamo", example = "2024-01-15", required = true)
+    @Schema(description = "Fecha en que se realizó el préstamo", example = "2024-01-15", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDate loanDate;
 
-    @Schema(description = "Fecha límite para devolver el libro", example = "2024-01-29", required = true)
+    @Schema(description = "Fecha límite para devolver el libro", example = "2024-01-29", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDate dueDate;
 
     @Schema(description = "Fecha en que se devolvió el libro (null si aún no se ha devuelto)", example = "2024-01-28")
     private LocalDate returnDate;
 
-    @Schema(description = "Estado actual del préstamo", example = "ACTIVE", allowableValues = {"ACTIVE", "RETURNED", "OVERDUE", "CANCELLED"}, required = true)
+    @Schema(description = "Estado actual del préstamo", example = "ACTIVE", allowableValues = {"ACTIVE", "RETURNED", "OVERDUE", "CANCELLED"}, requiredMode = Schema.RequiredMode.REQUIRED)
     private Loan.Status status;
 
-    @Schema(description = "Número de días del préstamo", example = "14", required = true, minimum = "7", maximum = "30")
+    @Schema(description = "Número de días del préstamo", example = "14", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "7", maximum = "30")
     private Integer loanDays;
 
-    @Schema(description = "Monto de la multa acumulada (0 si no hay multa)", example = "0.00", required = true, minimum = "0")
+    @Schema(description = "Monto de la multa acumulada (0 si no hay multa)", example = "0.00", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0")
     private BigDecimal fineAmount;
 
-    @Schema(description = "Número de extensiones realizadas (máximo 2)", example = "0", required = true, minimum = "0", maximum = "2")
+    @Schema(description = "Número de extensiones realizadas (máximo 2)", example = "0", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0", maximum = "2")
     private Integer extensionsCount;
 
-    @Schema(description = "Fecha y hora de creación del préstamo", example = "2024-01-15T10:30:00", required = true)
+    @Schema(description = "Fecha y hora de creación del préstamo", example = "2024-01-15T10:30:00", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime createdAt;
 
     @Schema(description = "Fecha y hora de la última actualización", example = "2024-01-20T14:45:00")

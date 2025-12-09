@@ -13,19 +13,19 @@ import lombok.NoArgsConstructor;
 @Schema(description = "DTO con información sobre la disponibilidad de un libro para préstamo")
 public class BookAvailabilityDTO {
 
-    @Schema(description = "ID del libro consultado", example = "1", required = true)
+    @Schema(description = "ID del libro consultado", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long bookId;
 
-    @Schema(description = "Indica si el libro está disponible para préstamo (tiene copias disponibles)", example = "true", required = true)
+    @Schema(description = "Indica si el libro está disponible para préstamo (tiene copias disponibles)", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
     private Boolean available;
 
-    @Schema(description = "Número de copias disponibles para préstamo", example = "3", required = true)
+    @Schema(description = "Número de copias disponibles para préstamo", example = "3", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer availableCopies;
 
-    @Schema(description = "Número total de copias del libro en la biblioteca", example = "5", required = true)
+    @Schema(description = "Número total de copias del libro en la biblioteca", example = "5", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer totalCopies;
 
-    @Schema(description = "Mensaje descriptivo sobre la disponibilidad", example = "El libro está disponible", required = true)
+    @Schema(description = "Mensaje descriptivo sobre la disponibilidad", example = "El libro está disponible", requiredMode = Schema.RequiredMode.REQUIRED)
     private String message;
 }
 

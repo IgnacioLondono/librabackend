@@ -41,6 +41,9 @@ interface UserApiService {
 
     @POST("api/users/logout")
     suspend fun logout(@Header("Authorization") token: String): Response<Unit>
+
+    @POST("api/users/bulk")
+    suspend fun loadUsersBulk(@Body users: List<UserDTOs.UserRegistrationRequest>): Response<UserDTOs.BulkLoadResponse>
 }
 
 

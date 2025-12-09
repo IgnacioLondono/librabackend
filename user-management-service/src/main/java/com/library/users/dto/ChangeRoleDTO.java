@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class ChangeRoleDTO {
 
     @NotNull(message = "El rol es obligatorio")
-    @Schema(description = "Nuevo rol del usuario", example = "ADMINISTRADOR", allowableValues = {"USUARIO", "ADMINISTRADOR"}, required = true)
+    @Schema(description = "Nuevo rol del usuario", example = "ADMINISTRADOR", allowableValues = {"USUARIO", "ADMINISTRADOR"}, requiredMode = Schema.RequiredMode.REQUIRED)
     private User.Role role;
 }
 

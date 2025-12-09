@@ -66,7 +66,17 @@ public class NotificationService {
 
     @Transactional
     public void deleteNotification(Long notificationId) {
+        log.info("Eliminando notificación: {}", notificationId);
+        if (!notificationRepository.existsById(notificationId)) {
+            throw new RuntimeException("Notificación no encontrada");
+        }
         notificationRepository.deleteById(notificationId);
+    }
+
+    @Transactional
+    public void deleteAllNotifications(Long userId) {
+        log.info("Eliminando todas las notificaciones del usuario: {}", userId);
+        notificationRepository.deleteByUserId(userId);
     }
 
     public Long getUnreadCount(Long userId) {

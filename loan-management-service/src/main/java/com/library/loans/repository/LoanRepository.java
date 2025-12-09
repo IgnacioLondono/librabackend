@@ -29,6 +29,15 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     List<Loan> findByDueDateAndStatus(@Param("dueDate") LocalDate dueDate, @Param("status") Loan.Status status);
 
     Optional<Loan> findByIdAndUserId(Long id, Long userId);
+
+    @Query("SELECT l FROM Loan l WHERE l.bookId = :bookId AND (l.status = 'ACTIVE' OR l.status = 'OVERDUE')")
+    List<Loan> findActiveLoansByBookId(@Param("bookId") Long bookId);
+
+    @Query("SELECT COUNT(l) > 0 FROM Loan l WHERE l.userId = :userId AND (l.status = 'ACTIVE' OR l.status = 'OVERDUE')")
+    boolean hasActiveLoansByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(l) > 0 FROM Loan l WHERE l.bookId = :bookId AND (l.status = 'ACTIVE' OR l.status = 'OVERDUE')")
+    boolean hasActiveLoansByBookId(@Param("bookId") Long bookId);
 }
 
 

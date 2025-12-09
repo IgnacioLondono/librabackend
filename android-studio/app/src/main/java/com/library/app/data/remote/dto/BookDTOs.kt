@@ -62,7 +62,16 @@ data class BookAvailabilityDTO(
 data class BookStatisticsDTO(
     @SerializedName("totalBooks") val totalBooks: Long,
     @SerializedName("availableBooks") val availableBooks: Long,
-    @SerializedName("loanedBooks") val loanedBooks: Long,
+    @SerializedName("loanedBooks") val loanedBooks: Long
+)
+
+data class SeedResponse(
+    @SerializedName("totalProcessed") val totalProcessed: Int,
+    @SerializedName("inserted") val inserted: Int,
+    @SerializedName("alreadyExists") val alreadyExists: Int,
+    @SerializedName("errors") val errors: Int,
+    @SerializedName("message") val message: String
+)
     @SerializedName("reservedBooks") val reservedBooks: Long,
     @SerializedName("totalCopies") val totalCopies: Long,
     @SerializedName("availableCopies") val availableCopies: Long

@@ -188,17 +188,6 @@ public class BookController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/bulk")
-    @Operation(summary = "Crear múltiples libros", 
-               description = "Crea múltiples libros en una sola operación. Solo crea nuevos, no actualiza existentes.")
-    public ResponseEntity<List<BookResponseDTO>> createBooksBulk(
-            @Parameter(description = "Lista de libros a crear") @Valid @RequestBody List<BookCreateDTO> books) {
-        List<BookResponseDTO> createdBooks = books.stream()
-                .map(bookService::createBook)
-                .toList();
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdBooks);
-    }
-
     @DeleteMapping("/bulk")
     @Operation(summary = "Eliminar múltiples libros", 
                description = "Elimina múltiples libros por sus IDs. Útil para sincronización desde Android.")
@@ -215,6 +204,17 @@ public class BookController {
             @Parameter(description = "Forzar recarga eliminando libros existentes") 
             @RequestParam(defaultValue = "false") boolean forceReload) {
         SeedResponseDTO response = bookSeedService.loadInitialBooks(forceReload);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/bulk")
+    @Operation(summary = "Cargar libros en lote", 
+               description = "Carga múltiples libros desde un JSON. Si un libro ya existe (por ISBN o título+autor), se omite. " +
+                           "Útil para cargar datos iniciales desde Android. No requiere autenticación para facilitar la carga inicial.")
+    public ResponseEntity<SeedResponseDTO> loadBooksBulk(
+            @Parameter(description = "Lista de libros a cargar", required = true)
+            @Valid @RequestBody List<BookCreateDTO> books) {
+        SeedResponseDTO response = bookSeedService.loadBooksBulk(books);
         return ResponseEntity.ok(response);
     }
 }

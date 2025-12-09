@@ -17,13 +17,13 @@ import java.time.LocalDateTime;
 @Schema(description = "DTO de respuesta con la información completa de un libro")
 public class BookResponseDTO {
 
-    @Schema(description = "ID único del libro generado automáticamente", example = "1", required = true)
+    @Schema(description = "ID único del libro generado automáticamente", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long id;
 
-    @Schema(description = "Título del libro", example = "1984", required = true)
+    @Schema(description = "Título del libro", example = "1984", requiredMode = Schema.RequiredMode.REQUIRED)
     private String title;
 
-    @Schema(description = "Nombre completo del autor", example = "George Orwell", required = true)
+    @Schema(description = "Nombre completo del autor", example = "George Orwell", requiredMode = Schema.RequiredMode.REQUIRED)
     private String author;
 
     @Schema(description = "Número ISBN del libro (único)", example = "9788497593793")
@@ -44,13 +44,13 @@ public class BookResponseDTO {
     @Schema(description = "URL de la imagen de portada del libro", example = "https://example.com/cover.jpg")
     private String coverUrl;
 
-    @Schema(description = "Estado actual del libro", example = "AVAILABLE", allowableValues = {"AVAILABLE", "LOANED", "RESERVED"}, required = true)
+    @Schema(description = "Estado actual del libro", example = "AVAILABLE", allowableValues = {"AVAILABLE", "LOANED", "RESERVED"}, requiredMode = Schema.RequiredMode.REQUIRED)
     private Book.Status status;
 
-    @Schema(description = "Número total de copias del libro en la biblioteca", example = "5", required = true)
+    @Schema(description = "Número total de copias del libro en la biblioteca", example = "5", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer totalCopies;
 
-    @Schema(description = "Número de copias disponibles para préstamo", example = "3", required = true)
+    @Schema(description = "Número de copias disponibles para préstamo", example = "3", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer availableCopies;
 
     @Schema(description = "Precio del libro en formato decimal", example = "29.99")
@@ -59,7 +59,7 @@ public class BookResponseDTO {
     @Schema(description = "Indica si el libro está destacado en el catálogo", example = "true", defaultValue = "false")
     private Boolean featured;
 
-    @Schema(description = "Fecha y hora de creación del registro en el sistema", example = "2024-01-15T10:30:00", required = true)
+    @Schema(description = "Fecha y hora de creación del registro en el sistema", example = "2024-01-15T10:30:00", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime createdAt;
 
     @Schema(description = "Fecha y hora de la última actualización del registro", example = "2024-01-20T14:45:00")

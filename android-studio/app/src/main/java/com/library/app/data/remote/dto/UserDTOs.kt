@@ -55,4 +55,25 @@ data class TokenValidationDTO(
     @SerializedName("message") val message: String
 )
 
+// Para carga masiva
+data class UserRegistrationRequest(
+    val name: String,
+    val email: String,
+    val phone: String?,
+    val password: String
+)
+
+data class BulkLoadResponse(
+    @SerializedName("totalProcessed") val totalProcessed: Int,
+    @SerializedName("inserted") val inserted: Int,
+    @SerializedName("alreadyExists") val alreadyExists: Int,
+    @SerializedName("errors") val errors: Int,
+    @SerializedName("message") val message: String
+)
+
+object UserDTOs {
+    typealias UserRegistrationRequest = UserRegistrationRequest
+    typealias BulkLoadResponse = BulkLoadResponse
+}
+
 

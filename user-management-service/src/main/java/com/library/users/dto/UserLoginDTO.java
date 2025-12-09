@@ -15,11 +15,11 @@ public class UserLoginDTO {
 
     @NotBlank(message = "El email es obligatorio")
     @Email(message = "El email debe ser válido")
-    @Schema(description = "Dirección de correo electrónico del usuario", example = "juan.perez@example.com", required = true)
+    @Schema(description = "Dirección de correo electrónico del usuario", example = "juan.perez@example.com", requiredMode = Schema.RequiredMode.REQUIRED)
     private String email;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Schema(description = "Contraseña del usuario", example = "password123", required = true)
+    @Schema(description = "Contraseña del usuario", example = "password123", requiredMode = Schema.RequiredMode.REQUIRED)
     private String password;
 }
 

@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class BlockUserDTO {
 
     @NotNull(message = "El campo 'blocked' es obligatorio")
-    @Schema(description = "true para bloquear el usuario, false para desbloquearlo. Al bloquear, se invalidan todas sus sesiones activas.", example = "true", required = true)
+    @Schema(description = "true para bloquear el usuario, false para desbloquearlo. Al bloquear, se invalidan todas sus sesiones activas.", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
     private Boolean blocked;
 }
 

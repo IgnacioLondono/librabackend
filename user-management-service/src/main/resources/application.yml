@@ -1,13 +1,27 @@
 server:
   port: 8081
+  # Aumentar límite de tamaño del request para permitir imágenes base64 grandes
+  max-http-header-size: 64KB
+  tomcat:
+    max-http-post-size: 10MB
 
 spring:
   application:
     name: user-management-service
+  # Configuración para permitir requests grandes (imágenes base64)
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
   datasource:
     url: jdbc:mysql://localhost:3306/library_users_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: root
-    password: 
+    password:
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 10
@@ -67,5 +81,10 @@ logging:
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file:
     name: logs/user-management-service.log
+
+# Carga inicial de datos
+# Cambiar a 'true' para cargar automáticamente los 2 usuarios al iniciar (solo si BD está vacía)
+users:
+  load-initial-data: true
 
 

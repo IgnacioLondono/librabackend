@@ -21,12 +21,12 @@ public class BookCreateDTO {
 
     @NotBlank(message = "El título es obligatorio")
     @Size(max = 200, message = "El título no puede exceder 200 caracteres")
-    @Schema(description = "Título del libro", example = "1984", required = true, maxLength = 200)
+    @Schema(description = "Título del libro", example = "1984", requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 200)
     private String title;
 
     @NotBlank(message = "El autor es obligatorio")
     @Size(max = 100, message = "El autor no puede exceder 100 caracteres")
-    @Schema(description = "Nombre completo del autor", example = "George Orwell", required = true, maxLength = 100)
+    @Schema(description = "Nombre completo del autor", example = "George Orwell", requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 100)
     private String author;
 
     @Size(max = 20, message = "El ISBN no puede exceder 20 caracteres")
@@ -54,7 +54,7 @@ public class BookCreateDTO {
 
     @NotNull(message = "El número de copias es obligatorio")
     @Positive(message = "El número de copias debe ser positivo")
-    @Schema(description = "Número total de copias del libro disponibles en la biblioteca", example = "5", required = true, minimum = "1")
+    @Schema(description = "Número total de copias del libro disponibles en la biblioteca", example = "5", requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1")
     private Integer totalCopies;
 
     @Schema(description = "Precio del libro en formato decimal", example = "29.99", minimum = "0")

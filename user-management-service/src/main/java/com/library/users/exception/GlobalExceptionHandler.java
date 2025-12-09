@@ -25,15 +25,27 @@ public class GlobalExceptionHandler {
             RuntimeException ex, WebRequest request) {
         log.error("RuntimeException: {}", ex.getMessage(), ex);
 
+        // Detectar si es un error 404 (recurso no encontrado)
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        String errorType = "Bad Request";
+        
+        if (ex.getMessage() != null && ex.getMessage().contains("no encontrado")) {
+            status = HttpStatus.NOT_FOUND;
+            errorType = "Not Found";
+        } else if (ex.getMessage() != null && ex.getMessage().contains("ya está registrado")) {
+            status = HttpStatus.CONFLICT;
+            errorType = "Conflict";
+        }
+
         ErrorResponseDTO error = ErrorResponseDTO.builder()
                 .timestamp(LocalDateTime.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error("Bad Request")
+                .status(status.value())
+                .error(errorType)
                 .message(ex.getMessage())
                 .path(request.getDescription(false).replace("uri=", ""))
                 .build();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        return ResponseEntity.status(status).body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -49,6 +49,7 @@ public class ReportsService {
     private Long getTotalBooks() {
         try {
             String url = microservicesConfig.getBookCatalog().getUrl() + "/api/books?size=1";
+            @SuppressWarnings("unchecked")
             Map<String, Object> response = webClientBuilder.build()
                     .get()
                     .uri(url)
@@ -141,6 +142,7 @@ public class ReportsService {
     private Long getAvailableBooks() {
         try {
             String url = microservicesConfig.getBookCatalog().getUrl() + "/api/books?size=1000";
+            @SuppressWarnings("unchecked")
             Map<String, Object> response = webClientBuilder.build()
                     .get()
                     .uri(url)
@@ -148,6 +150,7 @@ public class ReportsService {
                     .bodyToMono(Map.class)
                     .block();
             if (response != null && response.containsKey("content")) {
+                @SuppressWarnings("unchecked")
                 List<Map<String, Object>> books = (List<Map<String, Object>>) response.get("content");
                 return books.stream()
                         .filter(book -> {

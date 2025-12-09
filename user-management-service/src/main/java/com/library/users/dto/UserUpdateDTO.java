@@ -23,6 +23,9 @@ public class UserUpdateDTO {
     @Size(max = 500, message = "La URI de la imagen no puede exceder 500 caracteres")
     @Schema(description = "Nueva URI de la imagen de perfil del usuario", example = "https://example.com/profile.jpg", maxLength = 500)
     private String profileImageUri;
+
+    @Schema(description = "Nueva imagen de perfil del usuario en formato Base64 (opcional). Se acepta data URI (data:image/png;base64,...) o solo el string base64.", example = "data:image/png;base64,iVBORw0KGgoAAAANS...")
+    private String profileImageBase64;
 }
 
 

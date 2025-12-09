@@ -64,6 +64,14 @@ public class NotificationController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/user/{userId}/delete-all")
+    @Operation(summary = "Eliminar todas las notificaciones", description = "Elimina todas las notificaciones de un usuario")
+    public ResponseEntity<Void> deleteAllNotifications(
+            @Parameter(description = "ID del usuario") @PathVariable Long userId) {
+        notificationService.deleteAllNotifications(userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/user/{userId}/unread-count")
     @Operation(summary = "Contador de no leídas", description = "Obtiene el número de notificaciones no leídas de un usuario")
     public ResponseEntity<UnreadCountResponseDTO> getUnreadCount(
