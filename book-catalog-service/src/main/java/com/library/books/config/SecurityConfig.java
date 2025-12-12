@@ -24,7 +24,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/swagger-ui/**", "/api-docs/**", "/actuator/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api-docs/**", "/actuator/**").permitAll()
                         .requestMatchers("/api/books/seed").hasAuthority("ROLE_ADMINISTRADOR")
                         .requestMatchers("/api/books/bulk").permitAll() // Permitir carga masiva desde Android
                         .requestMatchers("/api/books/**").permitAll() // Permitir acceso público a libros

@@ -29,3 +29,9 @@ public class BulkLoadResponseDTO {
     private String message;
 }
 
+
+
+
+
+
+

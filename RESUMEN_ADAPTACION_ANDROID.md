@@ -273,3 +273,9 @@
 
 Los microservicios están listos para funcionar con la aplicación Android que obtiene todos los datos directamente desde los APIs, sin caché local.
 
+
+
+
+
+
+

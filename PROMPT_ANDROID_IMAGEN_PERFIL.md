@@ -454,3 +454,9 @@ profileImageBase64 longitud: [número] caracteres
 
 Si aparece "NO", revisa que el campo se esté enviando correctamente desde Android.
 
+
+
+
+
+
+

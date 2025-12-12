@@ -8,3 +8,9 @@ El archivo debe contener:
 
 La estructura del JSON debe ser exactamente como se muestra en el prompt de Cursor.
 
+
+
+
+
+
+

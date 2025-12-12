@@ -45,3 +45,9 @@ if ($port3306) {
     Write-Host "Inicia MySQL desde el Panel de Control de XAMPP" -ForegroundColor Yellow
 }
 
+
+
+
+
+
+
